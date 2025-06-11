@@ -1,128 +1,123 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Help Panel</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #0e1420;
-      color: white;
+// BinaryTradingApplication.java
+package com.example.trading;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class BinaryTradingApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(BinaryTradingApplication.class, args);
+    }
+}
+
+// TradeController.java
+package com.example.trading.controller;
+
+import com.example.trading.model.Trade;
+import com.example.trading.service.TradeService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/trade")
+@CrossOrigin(origins = "*")
+public class TradeController {
+
+    @Autowired
+    private TradeService tradeService;
+
+    @PostMapping("/execute")
+    public Trade executeTrade(@RequestBody Trade trade) {
+        return tradeService.executeTrade(trade);
     }
 
-    .help-panel {
-      width: 360px;
-      background-color: #0e1420;
-      padding: 20px;
-      border-left: 1px solid #1f2a3a;
-      height: 100vh;
+    @GetMapping("/history")
+    public List<Trade> getTradeHistory() {
+        return tradeService.getAllTrades();
+    }
+}
+
+// Trade.java (Model)
+package com.example.trading.model;
+
+public class Trade {
+    private String direction; // "UP" or "DOWN"
+    private double amount;
+    private boolean result;
+    private double balanceAfterTrade;
+
+    public String getDirection() {
+        return direction;
     }
 
-    .help-panel h2 {
-      margin-top: 0;
-      font-size: 20px;
-      color: #ffffff;
+    public void setDirection(String direction) {
+        this.direction = direction;
     }
 
-    .section {
-      margin: 40px 0;
-      text-align: center;
+    public double getAmount() {
+        return amount;
     }
 
-    .section img {
-      width: 32px;
-      height: 32px;
-      margin-bottom: 10px;
+    public void setAmount(double amount) {
+        this.amount = amount;
     }
 
-    .section h3 {
-      margin: 5px 0;
-      font-size: 16px;
-      color: #ffffff;
+    public boolean isResult() {
+        return result;
     }
 
-    .section p {
-      margin: 0;
-      font-size: 13px;
-      color: #9aa9bb;
+    public void setResult(boolean result) {
+        this.result = result;
     }
 
-    .divider {
-      height: 1px;
-      background-color: #1f2a3a;
-      margin: 20px 0;
+    public double getBalanceAfterTrade() {
+        return balanceAfterTrade;
     }
 
-    .bottom-contact {
-      text-align: center;
-      margin-top: 60px;
-      background-color: #121c2a;
-      padding: 20px 10px;
-      border-radius: 6px;
+    public void setBalanceAfterTrade(double balanceAfterTrade) {
+        this.balanceAfterTrade = balanceAfterTrade;
+    }
+}
+
+// TradeService.java
+package com.example.trading.service;
+
+import com.example.trading.model.Trade;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+@Service
+public class TradeService {
+    private double userBalance = 1000.0;
+    private final List<Trade> trades = new ArrayList<>();
+
+    public Trade executeTrade(Trade trade) {
+        Random random = new Random();
+        boolean win = random.nextBoolean();
+
+        if (win) {
+            userBalance += trade.getAmount();
+        } else {
+            userBalance -= trade.getAmount();
+        }
+
+        trade.setResult(win);
+        trade.setBalanceAfterTrade(userBalance);
+        trades.add(trade);
+        return trade;
     }
 
-    .bottom-contact img {
-      width: 28px;
-      margin-bottom: 10px;
+    public List<Trade> getAllTrades() {
+        return trades;
     }
+}
 
-    .bottom-contact p {
-      color: #ffffff;
-      margin: 0 0 5px 0;
-      font-size: 13px;
-    }
-
-    .bottom-contact a {
-      color: #3390ff;
-      text-decoration: none;
-      font-weight: bold;
-      font-size: 13px;
-    }
-
-    .close-button {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      font-size: 20px;
-      color: #9aa9bb;
-      cursor: pointer;
-    }
-  </style>
-</head>
-<body>
-  <div class="help-panel">
-    <div class="close-button">✕</div>
-    <h2>Help</h2>
-
-    <div class="section">
-      <img src="https://img.icons8.com/fluency/48/faq.png" alt="FAQ" />
-      <h3>FAQ</h3>
-      <p>Open the database</p>
-    </div>
-
-    <div class="divider"></div>
-
-    <div class="section">
-      <img src="https://img.icons8.com/color/48/graduation-cap.png" alt="Tutorials" />
-      <h3>Tutorials</h3>
-      <p>Use the hints</p>
-    </div>
-
-    <div class="divider"></div>
-
-    <div class="section">
-      <img src="https://img.icons8.com/fluency/48/technical-support.png" alt="Support" />
-      <h3>Support</h3>
-      <p>Submit a ticket</p>
-    </div>
-
-    <div class="bottom-contact">
-      <img src="https://img.icons8.com/fluency/48/help.png" alt="Question" />
-      <p>Didn't find an answer to your question?</p>
-      <a href="#">Contact support</a>
-    </div>
-  </div>
-</body>
-</html>
+// application.properties
+server.port=8080
+spring.resources.static-locations=classpath:/static/
