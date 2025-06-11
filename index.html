@@ -1,123 +1,316 @@
-// BinaryTradingApplication.java
-package com.example.trading;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Binary Trading Signal Board with Voice Alert</title>
+<style>
+  /* ====== Background Hacking Animation ====== */
+  body {
+    margin: 0; padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: black;
+    overflow: hidden;
+    color: #0f0;
+  }
+  #matrix {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    z-index: 0;
+  }
+  canvas {
+    display: block;
+  }
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+  /* ====== Container & UI ====== */
+  .container {
+    position: relative;
+    z-index: 10;
+    max-width: 500px;
+    margin: 3rem auto;
+    background: rgba(0,0,0,0.85);
+    border: 2px solid #0f0;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    box-shadow: 0 0 15px #0f0aaaff;
+  }
+  h1 {
+    text-align: center;
+    font-weight: 900;
+    margin-bottom: 1rem;
+    color: #0f0;
+    text-shadow: 0 0 10px #0f0;
+  }
 
-@SpringBootApplication
-public class BinaryTradingApplication {
-    public static void main(String[] args) {
-        SpringApplication.run(BinaryTradingApplication.class, args);
+  /* ====== Market Selector ====== */
+  label {
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+  select {
+    width: 100%;
+    padding: 0.6rem;
+    margin: 0.5rem 0 1rem 0;
+    font-size: 1rem;
+    background: black;
+    color: #0f0;
+    border: 1px solid #0f0;
+    border-radius: 6px;
+    outline: none;
+    transition: background 0.3s;
+  }
+  select:hover {
+    background: #062006;
+  }
+
+  /* ====== Signal Display ====== */
+  .signal-box {
+    margin-top: 2rem;
+    text-align: center;
+    font-size: 3rem;
+    font-weight: 900;
+    letter-spacing: 0.05em;
+    padding: 1.5rem;
+    border: 2px solid #0f0;
+    border-radius: 12px;
+    min-height: 100px;
+    user-select: none;
+    transition: background 0.5s, color 0.5s;
+  }
+  .buy {
+    color: #00ff00;
+    background: rgba(0, 255, 0, 0.15);
+    text-shadow: 0 0 10px #00ff00;
+  }
+  .sell {
+    color: #ff3300;
+    background: rgba(255, 51, 0, 0.15);
+    text-shadow: 0 0 10px #ff3300;
+  }
+  .neutral {
+    color: #0f0;
+    background: rgba(0, 255, 0, 0.05);
+    text-shadow: none;
+  }
+
+  /* ====== Countdown Timer ====== */
+  .countdown {
+    margin-top: 0.8rem;
+    font-size: 1.3rem;
+    font-weight: 700;
+    text-align: center;
+    color: #0f0;
+    text-shadow: 0 0 6px #0f0;
+  }
+
+  /* ====== Animated glow for container ====== */
+  @keyframes glow {
+    0%, 100% {
+      box-shadow: 0 0 15px #0f0aaaff;
     }
-}
+    50% {
+      box-shadow: 0 0 30px #00ff00cc;
+    }
+  }
+  .container {
+    animation: glow 3s ease-in-out infinite;
+  }
+</style>
+</head>
+<body>
 
-// TradeController.java
-package com.example.trading.controller;
+<canvas id="matrix"></canvas>
 
-import com.example.trading.model.Trade;
-import com.example.trading.service.TradeService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+<div class="container" role="main" aria-label="Binary Trading Signal Board with Voice">
+  <h1>Binary Trading Signal Board</h1>
 
-import java.util.List;
+  <label for="market-select">Select Market:</label>
+  <select id="market-select" aria-controls="signal-box" aria-live="polite">
+    <option value="BTC/USD">BTC/USD</option>
+    <option value="USD/JPY">USD/JPY</option>
+    <option value="USD/EUR">USD/EUR</option>
+    <option value="USD/GBP">USD/GBP</option>
+    <option value="USD/AUD">USD/AUD</option>
+    <option value="USD/CAD">USD/CAD</option>
+    <option value="USD/CHF">USD/CHF</option>
+    <option value="USD/NZD">USD/NZD</option>
+  </select>
 
-@RestController
-@RequestMapping("/api/trade")
-@CrossOrigin(origins = "*")
-public class TradeController {
+  <div id="signal-box" class="signal-box neutral" aria-live="polite" aria-atomic="true">
+    Waiting for next candle signal...
+  </div>
 
-    @Autowired
-    private TradeService tradeService;
+  <div id="countdown" class="countdown" aria-live="polite" aria-atomic="true">
+    Next signal in: 60s
+  </div>
+</div>
 
-    @PostMapping("/execute")
-    public Trade executeTrade(@RequestBody Trade trade) {
-        return tradeService.executeTrade(trade);
+<script>
+  // ====== Matrix Rain Background Animation ======
+  const canvas = document.getElementById('matrix');
+  const ctx = canvas.getContext('2d');
+  let width, height;
+  const letters = '01';
+  let fontSize = 16;
+  let columns;
+
+  function resizeCanvas() {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
+    columns = Math.floor(width / fontSize);
+  }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  const drops = [];
+  for(let x=0; x<columns; x++) {
+    drops[x] = Math.floor(Math.random()*height/fontSize);
+  }
+
+  function drawMatrix() {
+    ctx.fillStyle = 'rgba(0,0,0,0.05)';
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.fillStyle = '#0f0'; // green text
+    ctx.font = fontSize + 'px monospace';
+
+    for(let i=0; i<drops.length; i++) {
+      const text = letters.charAt(Math.floor(Math.random() * letters.length));
+      ctx.fillText(text, i*fontSize, drops[i]*fontSize);
+
+      if(drops[i]*fontSize > height && Math.random() > 0.975) {
+        drops[i] = 0;
+      }
+      drops[i]++;
+    }
+  }
+  setInterval(drawMatrix, 50);
+
+  // ====== Signal Generation Logic ======
+
+  const signalBox = document.getElementById('signal-box');
+  const countdownEl = document.getElementById('countdown');
+  const marketSelect = document.getElementById('market-select');
+
+  // currentSignal holds the last signal shown (buy/sell/neutral)
+  let currentSignal = 'neutral'; 
+  let countdown = 60;
+  let intervalId;
+
+  // Flag to ensure pre-alert spoken once per cycle
+  let preAlertGiven = false;
+
+  // For timing to sync with real market minutes
+  function syncCountdown() {
+    const now = new Date();
+    return 60 - now.getSeconds();
+  }
+
+  // Mock analyze function (replace with real algo if needed)
+  function analyzeSignal(market) {
+    // Random buy/sell with bias
+    const rand = Math.random();
+    if (rand > 0.55) return 'buy';
+    else if (rand > 0.2) return 'sell';
+    else return 'neutral';
+  }
+
+  // Text-to-Speech function to read signal aloud
+  function speakSignal(signal) {
+    if (!('speechSynthesis' in window)) {
+      console.warn('Speech Synthesis API not supported.');
+      return;
+    }
+    let message = '';
+    if (signal === 'buy') message = 'Buy signal';
+    else if (signal === 'sell') message = 'Sell signal';
+    else if (signal === 'neutral') message = 'No signal';
+
+    const utterance = new SpeechSynthesisUtterance(message);
+    utterance.lang = 'en-US';
+    utterance.rate = 1; // Speed of speech
+    utterance.pitch = 1; // Pitch of speech
+    window.speechSynthesis.cancel(); // Cancel any ongoing speech to avoid overlap
+    window.speechSynthesis.speak(utterance);
+  }
+
+  // Speak pre-alert 5 seconds before signal
+  function speakPreAlert(signal) {
+    if (!('speechSynthesis' in window)) {
+      return;
+    }
+    let message = '';
+    if (signal === 'buy') message = 'Buy signal coming in five seconds';
+    else if (signal === 'sell') message = 'Sell signal coming in five seconds';
+    else return; // no pre-alert for neutral
+
+    const utterance = new SpeechSynthesisUtterance(message);
+    utterance.lang = 'en-US';
+    utterance.rate = 1;
+    utterance.pitch = 1;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
+  }
+
+  // Update the UI for signal box
+  function updateSignalUI(signal) {
+    signalBox.classList.remove('buy', 'sell', 'neutral');
+    if(signal === 'buy') {
+      signalBox.classList.add('buy');
+      signalBox.textContent = 'BUY SIGNAL';
+    } else if(signal === 'sell') {
+      signalBox.classList.add('sell');
+      signalBox.textContent = 'SELL SIGNAL';
+    } else {
+      signalBox.classList.add('neutral');
+      signalBox.textContent = 'NO SIGNAL';
+    }
+  }
+
+  function tick() {
+    countdown--;
+
+    // 5 seconds before signal, give pre-alert voice once
+    if(countdown === 5 && !preAlertGiven) {
+      const upcomingSignal = analyzeSignal(marketSelect.value);
+      if(upcomingSignal === 'buy' || upcomingSignal === 'sell') {
+        speakPreAlert(upcomingSignal);
+      }
+      preAlertGiven = true;
     }
 
-    @GetMapping("/history")
-    public List<Trade> getTradeHistory() {
-        return tradeService.getAllTrades();
+    if(countdown <= 0) {
+      // New candle, generate new signal
+      countdown = 60;
+      preAlertGiven = false;
+      currentSignal = analyzeSignal(marketSelect.value);
+      updateSignalUI(currentSignal);
+      speakSignal(currentSignal);
     }
-}
+    countdownEl.textContent = `Next signal in: ${countdown}s`;
+  }
 
-// Trade.java (Model)
-package com.example.trading.model;
+  function start() {
+    countdown = syncCountdown();
+    currentSignal = 'neutral';
+    updateSignalUI(currentSignal);
+    countdownEl.textContent = `Next signal in: ${countdown}s`;
+    preAlertGiven = false;
 
-public class Trade {
-    private String direction; // "UP" or "DOWN"
-    private double amount;
-    private boolean result;
-    private double balanceAfterTrade;
+    if(intervalId) clearInterval(intervalId);
+    intervalId = setInterval(tick, 1000);
+  }
 
-    public String getDirection() {
-        return direction;
-    }
+  // Restart on market change
+  marketSelect.addEventListener('change', () => {
+    speakSignal('neutral');
+    start();
+  });
 
-    public void setDirection(String direction) {
-        this.direction = direction;
-    }
+  start();
+</script>
 
-    public double getAmount() {
-        return amount;
-    }
-
-    public void setAmount(double amount) {
-        this.amount = amount;
-    }
-
-    public boolean isResult() {
-        return result;
-    }
-
-    public void setResult(boolean result) {
-        this.result = result;
-    }
-
-    public double getBalanceAfterTrade() {
-        return balanceAfterTrade;
-    }
-
-    public void setBalanceAfterTrade(double balanceAfterTrade) {
-        this.balanceAfterTrade = balanceAfterTrade;
-    }
-}
-
-// TradeService.java
-package com.example.trading.service;
-
-import com.example.trading.model.Trade;
-import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-
-@Service
-public class TradeService {
-    private double userBalance = 1000.0;
-    private final List<Trade> trades = new ArrayList<>();
-
-    public Trade executeTrade(Trade trade) {
-        Random random = new Random();
-        boolean win = random.nextBoolean();
-
-        if (win) {
-            userBalance += trade.getAmount();
-        } else {
-            userBalance -= trade.getAmount();
-        }
-
-        trade.setResult(win);
-        trade.setBalanceAfterTrade(userBalance);
-        trades.add(trade);
-        return trade;
-    }
-
-    public List<Trade> getAllTrades() {
-        return trades;
-    }
-}
-
-// application.properties
-server.port=8080
-spring.resources.static-locations=classpath:/static/
+</body>
+</html>
