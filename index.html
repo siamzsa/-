@@ -19,10 +19,28 @@
       border-radius: 10px;
       padding: 1rem;
     }
+    input {
+      background-color: #111;
+      border: 1px solid #00ff9f;
+      color: #00ff9f;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
   </style>
 </head>
 <body class="p-6">
   <h1 class="text-3xl glow mb-4">🤖 AI Binary Signal Bot (Real & OTC Market)</h1>
+
+  <div class="mb-4 flex flex-wrap gap-4">
+    <div>
+      <label class="block mb-1 glow">🔑 Bot Token:</label>
+      <input id="botToken" type="text" placeholder="Enter Bot Token">
+    </div>
+    <div>
+      <label class="block mb-1 glow">📢 Channel ID:</label>
+      <input id="channelId" type="text" placeholder="Enter Channel ID">
+    </div>
+  </div>
 
   <div id="signal-box" class="box glow text-lg mb-4">
     Initializing analysis...
@@ -37,13 +55,8 @@
   </audio>
 
   <script>
-    const realMarkets = [
-      "EUR/USD", "GBP/USD", "AUD/USD", "NZD/USD",
-      "USD/JPY", "USD/CHF", "USD/CAD"
-    ];
-
+    const realMarkets = ["EUR/USD", "GBP/USD", "AUD/USD", "NZD/USD", "USD/JPY", "USD/CHF", "USD/CAD"];
     const otcMarkets = ["USD/BDT OTC", "USD/BRL OTC"];
-
     const mindsetLines = [
       "Stay calm. Trust the analysis.",
       "Smart money waits for the right moment.",
@@ -58,7 +71,7 @@
     const bgMusic = document.getElementById("bg-music");
 
     function getTodayMarketList() {
-      const day = new Date().getDay(); // 0 = Sunday, 6 = Saturday
+      const day = new Date().getDay();
       return (day === 0 || day === 6) ? otcMarkets : realMarkets;
     }
 
@@ -101,7 +114,7 @@
       const balance = Math.floor((baseAccuracy - 65) / 2);
       const timeframe = "1 Minute";
 
-      const message = `Prepare! ${market}, ${timeframe}, ${direction}. Accuracy ${baseAccuracy}% . Use $${balance}.`;
+      const message = `📈 ${market} (${timeframe})\n📊 Direction: ${direction}\n🎯 Accuracy: ${baseAccuracy}%\n💰 Use Balance: $${balance}`;
 
       return {
         market,
@@ -123,7 +136,6 @@
         <p>📊 Direction: <span class="text-yellow-300">${data.direction}</span></p>
         <p>⏱ Timeframe: <span class="text-yellow-300">${data.timeframe}</span></p>
         <p>🎯 Accuracy: <span class="text-yellow-300">${data.accuracy.toFixed(1)}%</span></p>
-        <p>💰 Use Balance: <span class="text-yellow-300">$${data.balance}</span></p>
         <hr class="my-2 border-yellow-300/50" />
         <p>🔎 Analysis:</p>
         <ul class="list-disc ml-5">
@@ -148,6 +160,23 @@
       speak(line);
     }
 
+    function sendToTelegram(message) {
+      const botToken = document.getElementById("botToken").value.trim();
+      const channelId = document.getElementById("channelId").value.trim();
+
+      if (!botToken || !channelId) return;
+
+      const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+      fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: channelId,
+          text: message
+        })
+      }).catch(err => console.error("Telegram Error:", err));
+    }
+
     function startCountdown() {
       bgMusic.play();
 
@@ -166,6 +195,7 @@
           const data = analyzeMarket();
           updateUI(data);
           speak(data.message);
+          sendToTelegram(data.message);
 
           bgMusic.pause();
           bgMusic.currentTime = 0;
