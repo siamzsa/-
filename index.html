@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>AI Binary Signal Bot</title>
+  <title>AI Binary Signal Bot with Save</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body {
@@ -25,20 +25,35 @@
       color: #00ff9f;
       padding: 4px 8px;
       border-radius: 6px;
+      width: 250px;
+    }
+    button {
+      background-color: #00ff9f;
+      color: #000;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: bold;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #00cc7a;
     }
   </style>
 </head>
 <body class="p-6">
   <h1 class="text-3xl glow mb-4">🤖 AI Binary Signal Bot (Real & OTC Market)</h1>
 
-  <div class="mb-4 flex flex-wrap gap-4">
+  <div class="mb-6 flex flex-wrap gap-4 items-end">
     <div>
       <label class="block mb-1 glow">🔑 Bot Token:</label>
-      <input id="botToken" type="text" placeholder="Enter Bot Token">
+      <input id="botToken" type="text" placeholder="Enter Bot Token" autocomplete="off" />
     </div>
     <div>
       <label class="block mb-1 glow">📢 Channel ID:</label>
-      <input id="channelId" type="text" placeholder="Enter Channel ID">
+      <input id="channelId" type="text" placeholder="Enter Channel ID" autocomplete="off" />
+    </div>
+    <div>
+      <button id="saveBtn">💾 Save</button>
     </div>
   </div>
 
@@ -46,7 +61,7 @@
     Initializing analysis...
   </div>
 
-  <div class="text-xl glow">
+  <div class="text-xl glow mb-4">
     ⏱ Next signal in: <span id="seconds">60</span>s
   </div>
 
@@ -55,6 +70,38 @@
   </audio>
 
   <script>
+    const botTokenInput = document.getElementById('botToken');
+    const channelIdInput = document.getElementById('channelId');
+    const saveBtn = document.getElementById('saveBtn');
+    const signalBox = document.getElementById('signal-box');
+    const secondsSpan = document.getElementById('seconds');
+    const bgMusic = document.getElementById('bg-music');
+
+    // Load saved token & channel ID from localStorage
+    function loadSettings() {
+      const savedToken = localStorage.getItem('botToken');
+      const savedChannel = localStorage.getItem('channelId');
+
+      if (savedToken) botTokenInput.value = savedToken;
+      if (savedChannel) channelIdInput.value = savedChannel;
+    }
+
+    // Save token & channel ID to localStorage
+    saveBtn.addEventListener('click', () => {
+      const token = botTokenInput.value.trim();
+      const channel = channelIdInput.value.trim();
+
+      if (!token || !channel) {
+        alert('Please enter both Bot Token and Channel ID before saving.');
+        return;
+      }
+
+      localStorage.setItem('botToken', token);
+      localStorage.setItem('channelId', channel);
+      alert('Bot Token and Channel ID saved successfully!');
+    });
+
+    // Market lists and mindset messages
     const realMarkets = ["EUR/USD", "GBP/USD", "AUD/USD", "NZD/USD", "USD/JPY", "USD/CHF", "USD/CAD"];
     const otcMarkets = ["USD/BDT OTC", "USD/BRL OTC"];
     const mindsetLines = [
@@ -68,7 +115,6 @@
     ];
 
     let currentIndex = 0;
-    const bgMusic = document.getElementById("bg-music");
 
     function getTodayMarketList() {
       const day = new Date().getDay();
@@ -111,8 +157,6 @@
       if (baseAccuracy > 99) baseAccuracy = 99;
       if (baseAccuracy < 70) baseAccuracy = 70;
 
-      // balance removed from message as requested
-
       const timeframe = "1 Minute";
 
       const message = `📢 TRADER ALDI SIGNAL 📢\n\n` +
@@ -135,7 +179,7 @@
     }
 
     function updateUI(data) {
-      document.getElementById("signal-box").innerHTML = `
+      signalBox.innerHTML = `
         <p>📈 Market: <span class="text-yellow-300">${data.market}</span></p>
         <p>📊 Direction: <span class="text-yellow-300">${data.direction === "Buy" ? "🟢 Buy" : "🔴 Sell"}</span></p>
         <p>⏱ Timeframe: <span class="text-yellow-300">${data.timeframe}</span></p>
@@ -151,6 +195,26 @@
       `;
     }
 
+    function sendToTelegram(message) {
+      const botToken = localStorage.getItem('botToken');
+      const channelId = localStorage.getItem('channelId');
+
+      if (!botToken || !channelId) {
+        console.warn('Bot Token or Channel ID not set in localStorage');
+        return;
+      }
+
+      const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+      fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: channelId,
+          text: message
+        })
+      }).catch(err => console.error("Telegram Error:", err));
+    }
+
     function speak(text) {
       const utter = new SpeechSynthesisUtterance(text);
       utter.lang = 'en-US';
@@ -162,23 +226,6 @@
     function speakMindsetLine() {
       const line = mindsetLines[Math.floor(Math.random() * mindsetLines.length)];
       speak(line);
-    }
-
-    function sendToTelegram(message) {
-      const botToken = document.getElementById("botToken").value.trim();
-      const channelId = document.getElementById("channelId").value.trim();
-
-      if (!botToken || !channelId) return;
-
-      const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
-      fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: channelId,
-          text: message
-        })
-      }).catch(err => console.error("Telegram Error:", err));
     }
 
     function startCountdown() {
@@ -193,7 +240,7 @@
         const seconds = now.getSeconds();
         const remaining = 60 - seconds;
 
-        document.getElementById("seconds").innerText = remaining;
+        secondsSpan.innerText = remaining;
 
         if (remaining === 10) {
           const data = analyzeMarket();
@@ -216,6 +263,7 @@
       }, 1000);
     }
 
+    loadSettings();
     speak("Binary Bot activated. Preparing market environment.");
     startCountdown();
   </script>
