@@ -111,16 +111,20 @@
       if (baseAccuracy > 99) baseAccuracy = 99;
       if (baseAccuracy < 70) baseAccuracy = 70;
 
-      const balance = Math.floor((baseAccuracy - 65) / 2);
+      // balance removed from message as requested
+
       const timeframe = "1 Minute";
 
-      const message = `📈 ${market} (${timeframe})\n📊 Direction: ${direction}\n🎯 Accuracy: ${baseAccuracy}%\n💰 Use Balance: $${balance}`;
+      const message = `📢 TRADER ALDI SIGNAL 📢\n\n` +
+                      `📈 Market: ${market} (${timeframe})\n` +
+                      `📊 Direction: ${direction === "Buy" ? "🟢 Buy" : "🔴 Sell"}\n` +
+                      `🎯 Accuracy: ${baseAccuracy}%\n\n` +
+                      `📌 Stay disciplined. Trade smart!`;
 
       return {
         market,
         direction,
         accuracy: baseAccuracy,
-        balance,
         timeframe,
         message,
         rsi,
@@ -133,7 +137,7 @@
     function updateUI(data) {
       document.getElementById("signal-box").innerHTML = `
         <p>📈 Market: <span class="text-yellow-300">${data.market}</span></p>
-        <p>📊 Direction: <span class="text-yellow-300">${data.direction}</span></p>
+        <p>📊 Direction: <span class="text-yellow-300">${data.direction === "Buy" ? "🟢 Buy" : "🔴 Sell"}</span></p>
         <p>⏱ Timeframe: <span class="text-yellow-300">${data.timeframe}</span></p>
         <p>🎯 Accuracy: <span class="text-yellow-300">${data.accuracy.toFixed(1)}%</span></p>
         <hr class="my-2 border-yellow-300/50" />
