@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>AI Binary Signal Bot (Enhanced Analysis)</title>
+  <title>AI Binary Signal Bot</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body {
@@ -22,7 +22,7 @@
   </style>
 </head>
 <body class="p-6">
-  <h1 class="text-3xl glow mb-4">🤖 AI Binary Signal Bot (Enhanced Analysis + Mindset)</h1>
+  <h1 class="text-3xl glow mb-4">🤖 AI Binary Signal Bot (Real & OTC Market)</h1>
 
   <div id="signal-box" class="box glow text-lg mb-4">
     Initializing analysis...
@@ -37,11 +37,12 @@
   </audio>
 
   <script>
-    const usdMarkets = [
+    const realMarkets = [
       "EUR/USD", "GBP/USD", "AUD/USD", "NZD/USD",
-      "USD/JPY", "USD/CHF", "USD/CAD",
-      "BTC/USD", "ETH/USD", "LTC/USD", "XAU/USD", "XAG/USD"
+      "USD/JPY", "USD/CHF", "USD/CAD"
     ];
+
+    const otcMarkets = ["USD/BDT OTC", "USD/BRL OTC"];
 
     const mindsetLines = [
       "Stay calm. Trust the analysis.",
@@ -56,22 +57,25 @@
     let currentIndex = 0;
     const bgMusic = document.getElementById("bg-music");
 
+    function getTodayMarketList() {
+      const day = new Date().getDay(); // 0 = Sunday, 6 = Saturday
+      return (day === 0 || day === 6) ? otcMarkets : realMarkets;
+    }
+
     function getRandomInt(min, max) {
       return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
-    // Advanced analysis combining multiple mock factors
     function analyzeMarket() {
-      const market = usdMarkets[currentIndex % usdMarkets.length];
+      const availableMarkets = getTodayMarketList();
+      const market = availableMarkets[currentIndex % availableMarkets.length];
       currentIndex++;
 
-      // Simulate some indicator values
-      const rsi = getRandomInt(20, 80); // 0-100 scale
-      const macd = (Math.random() * 4 - 2).toFixed(2); // -2 to +2
-      const volumeChange = getRandomInt(-10, 10); // percentage change
-      const priceMomentum = getRandomInt(-5, 5); // arbitrary momentum value
+      const rsi = getRandomInt(20, 80);
+      const macd = (Math.random() * 4 - 2).toFixed(2);
+      const volumeChange = getRandomInt(-10, 10);
+      const priceMomentum = getRandomInt(-5, 5);
 
-      // Combine factors to decide direction
       let score = 0;
       if (rsi < 30) score += 2;
       else if (rsi > 70) score -= 2;
@@ -85,21 +89,18 @@
       if (priceMomentum > 1) score += 1;
       else if (priceMomentum < -1) score -= 1;
 
-      // Determine direction from score
       let direction = "Buy";
       if (score < 0) direction = "Sell";
       else if (score === 0) direction = Math.random() > 0.5 ? "Buy" : "Sell";
 
-      // Calculate accuracy based on magnitude of score + some randomness
       let baseAccuracy = 75 + Math.min(Math.abs(score) * 7, 20);
       baseAccuracy += getRandomInt(-5, 5);
       if (baseAccuracy > 99) baseAccuracy = 99;
       if (baseAccuracy < 70) baseAccuracy = 70;
 
-      // Suggested balance usage based on confidence
       const balance = Math.floor((baseAccuracy - 65) / 2);
-
       const timeframe = "1 Minute";
+
       const message = `Prepare! ${market}, ${timeframe}, ${direction}. Accuracy ${baseAccuracy}% . Use $${balance}.`;
 
       return {
