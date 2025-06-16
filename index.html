@@ -2,71 +2,117 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>AI Binary Signal Bot with Save</title>
+  <title>AI Binary Signal Bot with Candlestick Patterns</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body {
       font-family: 'Courier New', monospace;
-      background-color: #0d0d0d;
+      background: linear-gradient(135deg, #000a0a 0%, #001514 100%);
       color: #00ff9f;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
     }
     .glow {
-      text-shadow: 0 0 10px #00ff9f, 0 0 20px #00ff9f;
+      text-shadow: 0 0 10px #00ff9f, 0 0 20px #00ff9f, 0 0 30px #00ff9f;
     }
-    .box {
-      background-color: rgba(0, 0, 0, 0.9);
-      border: 1px solid #00ff9f;
-      border-radius: 10px;
-      padding: 1rem;
+    .container {
+      background: rgba(0, 0, 0, 0.85);
+      border: 2px solid #00ff9f;
+      border-radius: 20px;
+      padding: 2.5rem 3rem;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 0 10px #00ff9f, 0 0 30px #00ff9f, inset 0 0 40px #00ff9f;
+    }
+    label {
+      font-weight: 600;
+      font-size: 1rem;
+      display: block;
+      margin-bottom: 0.4rem;
+      color: #00ff9f;
     }
     input {
       background-color: #111;
-      border: 1px solid #00ff9f;
+      border: 1.5px solid #00ff9f;
       color: #00ff9f;
-      padding: 4px 8px;
-      border-radius: 6px;
-      width: 250px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      width: 280px;
+      font-size: 1rem;
+      transition: border-color 0.3s;
+    }
+    input:focus {
+      outline: none;
+      border-color: #00ff9f;
+      box-shadow: 0 0 8px #00ff9f;
+      background-color: #121212;
     }
     button {
       background-color: #00ff9f;
       color: #000;
-      padding: 8px 16px;
-      border-radius: 8px;
-      font-weight: bold;
-      transition: background-color 0.3s;
+      padding: 12px 28px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      box-shadow: 0 0 15px #00ff9f;
+      transition: background-color 0.3s, box-shadow 0.3s;
     }
     button:hover {
       background-color: #00cc7a;
+      box-shadow: 0 0 20px #00cc7a, 0 0 40px #00cc7a;
+    }
+    #signal-box {
+      background: #001814;
+      border: 1.5px solid #00ff9f;
+      border-radius: 15px;
+      padding: 1.5rem 2rem;
+      min-height: 180px;
+      line-height: 1.5;
+      font-size: 1.15rem;
+      box-shadow: 0 0 10px #00ff9f, inset 0 0 15px #00ff9f;
+      white-space: pre-line;
+    }
+    hr {
+      border-color: #00ff9f99;
+      margin: 1rem 0;
+    }
+    .countdown {
+      font-size: 1.3rem;
+      font-weight: 600;
+      letter-spacing: 1.5px;
     }
   </style>
 </head>
-<body class="p-6">
-  <h1 class="text-3xl glow mb-4">🤖 AI Binary Signal Bot (Real & OTC Market)</h1>
+<body>
+  <div class="container">
+    <h1 class="text-4xl glow mb-8 text-center select-none">🤖 AI Binary Signal Bot<br /><span class="text-xl opacity-70">Real & OTC Market</span></h1>
 
-  <div class="mb-6 flex flex-wrap gap-4 items-end">
-    <div>
-      <label class="block mb-1 glow">🔑 Bot Token:</label>
-      <input id="botToken" type="text" placeholder="Enter Bot Token" autocomplete="off" />
-    </div>
-    <div>
-      <label class="block mb-1 glow">📢 Channel ID:</label>
-      <input id="channelId" type="text" placeholder="Enter Channel ID" autocomplete="off" />
-    </div>
-    <div>
-      <button id="saveBtn">💾 Save</button>
-    </div>
-  </div>
+    <form id="settings-form" class="flex flex-wrap justify-center gap-x-8 gap-y-6 mb-8 select-none" onsubmit="return false;">
+      <div class="flex flex-col items-start">
+        <label for="botToken" class="glow">🔑 Bot Token:</label>
+        <input id="botToken" type="text" placeholder="Enter Bot Token" autocomplete="off" />
+      </div>
+      <div class="flex flex-col items-start">
+        <label for="channelId" class="glow">📢 Channel ID:</label>
+        <input id="channelId" type="text" placeholder="Enter Channel ID" autocomplete="off" />
+      </div>
+      <div class="flex items-end">
+        <button id="saveBtn" type="submit" class="glow">Save</button>
+      </div>
+    </form>
 
-  <div id="signal-box" class="box glow text-lg mb-4">
-    Initializing analysis...
-  </div>
+    <div id="signal-box" class="glow">Initializing analysis...</div>
 
-  <div class="text-xl glow mb-4">
-    ⏱ Next signal in: <span id="seconds">60</span>s
+    <div class="countdown glow mt-6 text-center select-none">
+      ⏱ Next signal in: <span id="seconds">60</span>s
+    </div>
   </div>
 
   <audio id="bg-music" loop>
-    <source src="https://cdn.pixabay.com/download/audio/2022/08/19/audio_62f828f7a2.mp3?filename=ambient-technology-112788.mp3" type="audio/mpeg">
+    <source src="https://cdn.pixabay.com/download/audio/2022/08/19/audio_62f828f7a2.mp3?filename=ambient-technology-112788.mp3" type="audio/mpeg" />
   </audio>
 
   <script>
@@ -77,31 +123,6 @@
     const secondsSpan = document.getElementById('seconds');
     const bgMusic = document.getElementById('bg-music');
 
-    // Load saved token & channel ID from localStorage
-    function loadSettings() {
-      const savedToken = localStorage.getItem('botToken');
-      const savedChannel = localStorage.getItem('channelId');
-
-      if (savedToken) botTokenInput.value = savedToken;
-      if (savedChannel) channelIdInput.value = savedChannel;
-    }
-
-    // Save token & channel ID to localStorage
-    saveBtn.addEventListener('click', () => {
-      const token = botTokenInput.value.trim();
-      const channel = channelIdInput.value.trim();
-
-      if (!token || !channel) {
-        alert('Please enter both Bot Token and Channel ID before saving.');
-        return;
-      }
-
-      localStorage.setItem('botToken', token);
-      localStorage.setItem('channelId', channel);
-      alert('Bot Token and Channel ID saved successfully!');
-    });
-
-    // Market lists and mindset messages
     const realMarkets = ["EUR/USD", "GBP/USD", "AUD/USD", "NZD/USD", "USD/JPY", "USD/CHF", "USD/CAD"];
     const otcMarkets = ["USD/BDT OTC", "USD/BRL OTC"];
     const mindsetLines = [
@@ -130,52 +151,41 @@
       const market = availableMarkets[currentIndex % availableMarkets.length];
       currentIndex++;
 
-      const rsi = getRandomInt(20, 80);
-      const macd = (Math.random() * 4 - 2).toFixed(2);
-      const volumeChange = getRandomInt(-10, 10);
-      const priceMomentum = getRandomInt(-5, 5);
+      const rsi = getRandomInt(10, 90);
+      const macd = (Math.random() * 6 - 3).toFixed(2);
+      const volumeChange = getRandomInt(-20, 20);
+      const priceMomentum = getRandomInt(-8, 8);
+      const candlestickPatterns = ["Bullish Engulfing", "Bearish Engulfing", "Doji", "Hammer", "Shooting Star", "Morning Star", "Evening Star", "None"];
+      const pattern = candlestickPatterns[Math.floor(Math.random() * candlestickPatterns.length)];
 
       let score = 0;
       if (rsi < 30) score += 2;
       else if (rsi > 70) score -= 2;
 
-      if (macd > 0.3) score += 2;
-      else if (macd < -0.3) score -= 2;
+      if (macd > 0.5) score += 2;
+      else if (macd < -0.5) score -= 2;
 
-      if (volumeChange > 3) score += 1;
-      else if (volumeChange < -3) score -= 1;
+      if (volumeChange > 5) score += 1;
+      else if (volumeChange < -5) score -= 1;
 
-      if (priceMomentum > 1) score += 1;
-      else if (priceMomentum < -1) score -= 1;
+      if (priceMomentum > 2) score += 1;
+      else if (priceMomentum < -2) score -= 1;
+
+      if (pattern === "Bullish Engulfing" || pattern === "Hammer" || pattern === "Morning Star") score += 2;
+      else if (pattern === "Bearish Engulfing" || pattern === "Shooting Star" || pattern === "Evening Star") score -= 2;
 
       let direction = "Buy";
       if (score < 0) direction = "Sell";
       else if (score === 0) direction = Math.random() > 0.5 ? "Buy" : "Sell";
 
-      let baseAccuracy = 75 + Math.min(Math.abs(score) * 7, 20);
+      let baseAccuracy = 75 + Math.min(Math.abs(score) * 6, 20);
       baseAccuracy += getRandomInt(-5, 5);
-      if (baseAccuracy > 99) baseAccuracy = 99;
-      if (baseAccuracy < 70) baseAccuracy = 70;
+      baseAccuracy = Math.max(70, Math.min(baseAccuracy, 99));
 
       const timeframe = "1 Minute";
+      const message = `📢 TRADER ALDI SIGNAL 📢\n\n📈 Market: ${market} (${timeframe})\n📊 Direction: ${direction === "Buy" ? "🟢 Buy" : "🔴 Sell"}\n🎯 Accuracy: ${baseAccuracy}%\n🕯 Pattern: ${pattern}\n\n📌 Stay disciplined. Trade smart!`;
 
-      const message = `📢 TRADER ALDI SIGNAL 📢\n\n` +
-                      `📈 Market: ${market} (${timeframe})\n` +
-                      `📊 Direction: ${direction === "Buy" ? "🟢 Buy" : "🔴 Sell"}\n` +
-                      `🎯 Accuracy: ${baseAccuracy}%\n\n` +
-                      `📌 Stay disciplined. Trade smart!`;
-
-      return {
-        market,
-        direction,
-        accuracy: baseAccuracy,
-        timeframe,
-        message,
-        rsi,
-        macd,
-        volumeChange,
-        priceMomentum
-      };
+      return { market, direction, accuracy: baseAccuracy, timeframe, message, rsi, macd, volumeChange, priceMomentum, pattern };
     }
 
     function updateUI(data) {
@@ -184,7 +194,8 @@
         <p>📊 Direction: <span class="text-yellow-300">${data.direction === "Buy" ? "🟢 Buy" : "🔴 Sell"}</span></p>
         <p>⏱ Timeframe: <span class="text-yellow-300">${data.timeframe}</span></p>
         <p>🎯 Accuracy: <span class="text-yellow-300">${data.accuracy.toFixed(1)}%</span></p>
-        <hr class="my-2 border-yellow-300/50" />
+        <p>🕯 Pattern: <span class="text-yellow-300">${data.pattern}</span></p>
+        <hr />
         <p>🔎 Analysis:</p>
         <ul class="list-disc ml-5">
           <li>RSI: ${data.rsi}</li>
@@ -198,20 +209,13 @@
     function sendToTelegram(message) {
       const botToken = localStorage.getItem('botToken');
       const channelId = localStorage.getItem('channelId');
-
-      if (!botToken || !channelId) {
-        console.warn('Bot Token or Channel ID not set in localStorage');
-        return;
-      }
+      if (!botToken || !channelId) return;
 
       const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
       fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: channelId,
-          text: message
-        })
+        body: JSON.stringify({ chat_id: channelId, text: message })
       }).catch(err => console.error("Telegram Error:", err));
     }
 
@@ -230,16 +234,12 @@
 
     function startCountdown() {
       bgMusic.play();
+      let mindsetInterval = setInterval(() => speakMindsetLine(), 15000);
 
-      let mindsetInterval = setInterval(() => {
-        speakMindsetLine();
-      }, 15000);
-
-      const countdownInterval = setInterval(() => {
+      setInterval(() => {
         const now = new Date();
         const seconds = now.getSeconds();
         const remaining = 60 - seconds;
-
         secondsSpan.innerText = remaining;
 
         if (remaining === 10) {
@@ -247,21 +247,33 @@
           updateUI(data);
           speak(data.message);
           sendToTelegram(data.message);
-
           bgMusic.pause();
           bgMusic.currentTime = 0;
-
           clearInterval(mindsetInterval);
         }
 
         if (remaining === 0) {
           bgMusic.play();
-          mindsetInterval = setInterval(() => {
-            speakMindsetLine();
-          }, 15000);
+          mindsetInterval = setInterval(() => speakMindsetLine(), 15000);
         }
       }, 1000);
     }
+
+    function loadSettings() {
+      const savedToken = localStorage.getItem('botToken');
+      const savedChannel = localStorage.getItem('channelId');
+      if (savedToken) botTokenInput.value = savedToken;
+      if (savedChannel) channelIdInput.value = savedChannel;
+    }
+
+    saveBtn.addEventListener('click', () => {
+      const token = botTokenInput.value.trim();
+      const channel = channelIdInput.value.trim();
+      if (!token || !channel) return alert('Please enter both Bot Token and Channel ID before saving.');
+      localStorage.setItem('botToken', token);
+      localStorage.setItem('channelId', channel);
+      alert('Bot Token and Channel ID saved successfully!');
+    });
 
     loadSettings();
     speak("Binary Bot activated. Preparing market environment.");
