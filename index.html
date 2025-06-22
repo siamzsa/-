@@ -2,187 +2,95 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>AI Binary Signal Bot (Enhanced Analysis)</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Binary Trading Signal Bot</title>
   <style>
-    body {
-      font-family: 'Courier New', monospace;
-      background-color: #0d0d0d;
-      color: #00ff9f;
-    }
-    .glow {
-      text-shadow: 0 0 10px #00ff9f, 0 0 20px #00ff9f;
-    }
-    .box {
-      background-color: rgba(0, 0, 0, 0.9);
-      border: 1px solid #00ff9f;
-      border-radius: 10px;
-      padding: 1rem;
-    }
+    body { background: #0f172a; color: #fff; font-family: sans-serif; text-align: center; }
+    .container { max-width: 600px; margin: auto; padding: 20px; border: 2px solid #334155; border-radius: 10px; background: #1e293b; }
+    button { background: #22c55e; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+    #result { margin-top: 20px; padding: 15px; border-radius: 5px; background: #334155; text-align: left; }
+    img { max-width: 100%; margin-top: 10px; border-radius: 5px; }
   </style>
 </head>
-<body class="p-6">
-  <h1 class="text-3xl glow mb-4">🤖 AI Binary Signal Bot (Enhanced Analysis + Mindset)</h1>
-
-  <div id="signal-box" class="box glow text-lg mb-4">
-    Initializing analysis...
+<body>
+  <div class="container">
+    <h2>📊 Binary Trading Signal Bot</h2>
+    <p>Upload your chart screenshot:</p>
+    <input type="file" id="chartInput" accept="image/*" />
+    <br /><br />
+    <button onclick="analyzeMarket()">Analyze & Signal</button>
+    <div id="preview"></div>
+    <div id="result"></div>
   </div>
-
-  <div class="text-xl glow">
-    ⏱ Next signal in: <span id="seconds">60</span>s
-  </div>
-
-  <audio id="bg-music" loop>
-    <source src="https://cdn.pixabay.com/download/audio/2022/08/19/audio_62f828f7a2.mp3?filename=ambient-technology-112788.mp3" type="audio/mpeg">
-  </audio>
 
   <script>
-    const usdMarkets = [
-      "EUR/USD", "GBP/USD", "AUD/USD", "NZD/USD",
-      "USD/JPY", "USD/CHF", "USD/CAD",
-      "BTC/USD", "ETH/USD", "LTC/USD", "XAU/USD", "XAG/USD"
-    ];
-
-    const mindsetLines = [
-      "Stay calm. Trust the analysis.",
-      "Smart money waits for the right moment.",
-      "Be patient. One trade at a time.",
-      "Don’t overtrade. Wait for confirmation.",
-      "Winning is waiting. Entry is everything.",
-      "Trade what you see, not what you feel.",
-      "Confidence comes from discipline."
-    ];
-
-    let currentIndex = 0;
-    const bgMusic = document.getElementById("bg-music");
-
-    function getRandomInt(min, max) {
-      return Math.floor(Math.random() * (max - min + 1)) + min;
-    }
-
-    // Advanced analysis combining multiple mock factors
     function analyzeMarket() {
-      const market = usdMarkets[currentIndex % usdMarkets.length];
-      currentIndex++;
+      const fileInput = document.getElementById('chartInput');
+      const resultDiv = document.getElementById('result');
+      const previewDiv = document.getElementById('preview');
 
-      // Simulate some indicator values
-      const rsi = getRandomInt(20, 80); // 0-100 scale
-      const macd = (Math.random() * 4 - 2).toFixed(2); // -2 to +2
-      const volumeChange = getRandomInt(-10, 10); // percentage change
-      const priceMomentum = getRandomInt(-5, 5); // arbitrary momentum value
+      if (fileInput.files.length === 0) {
+        alert('Please upload a screenshot!');
+        return;
+      }
 
-      // Combine factors to decide direction
-      let score = 0;
-      if (rsi < 30) score += 2;
-      else if (rsi > 70) score -= 2;
+      // Show preview
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(fileInput.files[0]);
+      previewDiv.innerHTML = '';
+      previewDiv.appendChild(img);
 
-      if (macd > 0.3) score += 2;
-      else if (macd < -0.3) score -= 2;
+      resultDiv.innerHTML = '<p>Analyzing market data...</p>';
 
-      if (volumeChange > 3) score += 1;
-      else if (volumeChange < -3) score -= 1;
+      setTimeout(() => {
+        // Random simulated analysis data
+        const trends = ['Uptrend (price above 50MA, higher highs)', 'Downtrend (price below 50MA, lower lows)', 'Sideways (price between MA, no clear direction)'];
+        const patterns = ['Bullish Engulfing', 'Bearish Engulfing', 'Doji', 'Hammer', 'Shooting Star', 'Morning Star', 'Evening Star'];
+        const rsiVals = ['RSI 30 (Oversold)', 'RSI 70 (Overbought)', 'RSI 50 (Neutral)'];
+        const macdVals = ['MACD Bullish Crossover', 'MACD Bearish Crossover', 'MACD Flat'];
+        const bollVals = ['Price near Upper Band (possible reversal)', 'Price near Lower Band (possible reversal)', 'Price near Middle Band'];
 
-      if (priceMomentum > 1) score += 1;
-      else if (priceMomentum < -1) score -= 1;
+        const trend = trends[Math.floor(Math.random() * trends.length)];
+        const pattern = patterns[Math.floor(Math.random() * patterns.length)];
+        const rsi = rsiVals[Math.floor(Math.random() * rsiVals.length)];
+        const macd = macdVals[Math.floor(Math.random() * macdVals.length)];
+        const boll = bollVals[Math.floor(Math.random() * bollVals.length)];
 
-      // Determine direction from score
-      let direction = "Buy";
-      if (score < 0) direction = "Sell";
-      else if (score === 0) direction = Math.random() > 0.5 ? "Buy" : "Sell";
+        // Signal decision
+        let signal = 'WAIT';
+        let reasons = [];
 
-      // Calculate accuracy based on magnitude of score + some randomness
-      let baseAccuracy = 75 + Math.min(Math.abs(score) * 7, 20);
-      baseAccuracy += getRandomInt(-5, 5);
-      if (baseAccuracy > 99) baseAccuracy = 99;
-      if (baseAccuracy < 70) baseAccuracy = 70;
-
-      // Suggested balance usage based on confidence
-      const balance = Math.floor((baseAccuracy - 65) / 2);
-
-      const timeframe = "1 Minute";
-      const message = `Prepare! ${market}, ${timeframe}, ${direction}. Accuracy ${baseAccuracy}% . Use $${balance}.`;
-
-      return {
-        market,
-        direction,
-        accuracy: baseAccuracy,
-        balance,
-        timeframe,
-        message,
-        rsi,
-        macd,
-        volumeChange,
-        priceMomentum
-      };
-    }
-
-    function updateUI(data) {
-      document.getElementById("signal-box").innerHTML = `
-        <p>📈 Market: <span class="text-yellow-300">${data.market}</span></p>
-        <p>📊 Direction: <span class="text-yellow-300">${data.direction}</span></p>
-        <p>⏱ Timeframe: <span class="text-yellow-300">${data.timeframe}</span></p>
-        <p>🎯 Accuracy: <span class="text-yellow-300">${data.accuracy.toFixed(1)}%</span></p>
-        <p>💰 Use Balance: <span class="text-yellow-300">$${data.balance}</span></p>
-        <hr class="my-2 border-yellow-300/50" />
-        <p>🔎 Analysis:</p>
-        <ul class="list-disc ml-5">
-          <li>RSI: ${data.rsi}</li>
-          <li>MACD: ${data.macd}</li>
-          <li>Volume Change: ${data.volumeChange}%</li>
-          <li>Price Momentum: ${data.priceMomentum}</li>
-        </ul>
-      `;
-    }
-
-    function speak(text) {
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.lang = 'en-US';
-      utter.pitch = 1.1;
-      utter.rate = 1;
-      speechSynthesis.speak(utter);
-    }
-
-    function speakMindsetLine() {
-      const line = mindsetLines[Math.floor(Math.random() * mindsetLines.length)];
-      speak(line);
-    }
-
-    function startCountdown() {
-      bgMusic.play();
-
-      let mindsetInterval = setInterval(() => {
-        speakMindsetLine();
-      }, 15000);
-
-      const countdownInterval = setInterval(() => {
-        const now = new Date();
-        const seconds = now.getSeconds();
-        const remaining = 60 - seconds;
-
-        document.getElementById("seconds").innerText = remaining;
-
-        if (remaining === 10) {
-          const data = analyzeMarket();
-          updateUI(data);
-          speak(data.message);
-
-          bgMusic.pause();
-          bgMusic.currentTime = 0;
-
-          clearInterval(mindsetInterval);
+        if (trend.includes('Uptrend') && (pattern.includes('Bullish') || pattern === 'Hammer' || pattern === 'Morning Star') && macd.includes('Bullish')) {
+          signal = 'CALL';
+          reasons.push('Uptrend confirmed by moving averages');
+          reasons.push(`Pattern detected: ${pattern}`);
+          reasons.push('MACD shows bullish crossover');
+          if (rsi.includes('Oversold')) reasons.push('RSI shows oversold - buy pressure');
+        } 
+        else if (trend.includes('Downtrend') && (pattern.includes('Bearish') || pattern === 'Shooting Star' || pattern === 'Evening Star') && macd.includes('Bearish')) {
+          signal = 'PUT';
+          reasons.push('Downtrend confirmed by moving averages');
+          reasons.push(`Pattern detected: ${pattern}`);
+          reasons.push('MACD shows bearish crossover');
+          if (rsi.includes('Overbought')) reasons.push('RSI shows overbought - sell pressure');
+        } 
+        else {
+          reasons.push('Mixed or unclear signals, better to wait.');
         }
 
-        if (remaining === 0) {
-          bgMusic.play();
-          mindsetInterval = setInterval(() => {
-            speakMindsetLine();
-          }, 15000);
-        }
-      }, 1000);
+        resultDiv.innerHTML = `
+          <h3>✅ Market Analysis</h3>
+          <p><strong>Trend:</strong> ${trend}</p>
+          <p><strong>Candle Pattern:</strong> ${pattern}</p>
+          <p><strong>RSI:</strong> ${rsi}</p>
+          <p><strong>MACD:</strong> ${macd}</p>
+          <p><strong>Bollinger Band:</strong> ${boll}</p>
+          <h3>📌 Final Signal: <span style="color:${signal==='CALL' ? '#22c55e' : signal==='PUT' ? '#ef4444' : '#facc15'}">${signal}</span></h3>
+          <p><strong>Reasoning:</strong></p>
+          <ul>${reasons.map(r => `<li>${r}</li>`).join('')}</ul>
+        `;
+      }, 2500);
     }
-
-    speak("Binary Bot activated. Preparing market environment.");
-    startCountdown();
   </script>
 </body>
 </html>
