@@ -1,96 +1,216 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Binary Trading Signal Bot</title>
+  <meta charset="UTF-8">
+  <title>MT-BUG FUTURE SIGNAL BOT</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body { background: #0f172a; color: #fff; font-family: sans-serif; text-align: center; }
-    .container { max-width: 600px; margin: auto; padding: 20px; border: 2px solid #334155; border-radius: 10px; background: #1e293b; }
-    button { background: #22c55e; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
-    #result { margin-top: 20px; padding: 15px; border-radius: 5px; background: #334155; text-align: left; }
-    img { max-width: 100%; margin-top: 10px; border-radius: 5px; }
+    body {
+      background-color: #0d0d0d;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+
+    .container {
+      background-color: #1e1e2f;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 0 20px #00ff99;
+      max-width: 420px;
+      margin: auto;
+    }
+
+    .title {
+      text-align: center;
+      font-size: 28px;
+      color: #33ccff;
+      margin-bottom: 20px;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 8px;
+      background: #26263a;
+      color: white;
+      border: 2px solid #333;
+      box-sizing: border-box;
+      animation: glow 2s infinite alternate;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 20px;
+      border: none;
+      border-radius: 5px;
+      background: linear-gradient(to right, #ff00cc, #3333ff);
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .signal-box {
+      background: #111122;
+      padding: 10px;
+      margin-top: 10px;
+      border-left: 5px solid #00ff99;
+    }
+
+    .call {
+      color: #00ff00;
+    }
+
+    .put {
+      color: #ff4444;
+    }
+
+    #loader {
+      display: none;
+      text-align: center;
+      padding: 10px;
+      color: cyan;
+      font-weight: bold;
+    }
+
+    #copy-btn {
+      background-color: #00cc66;
+      margin-top: 20px;
+    }
+
+    label.checkbox-label {
+      display: flex;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    label.checkbox-label input {
+      width: auto;
+      margin-right: 8px;
+      animation: none;
+    }
+
+    @keyframes glow {
+      from {
+        box-shadow: 0 0 10px #00ff99, 0 0 20px #00ff99, 0 0 30px #00ff99;
+      }
+      to {
+        box-shadow: 0 0 20px #33ccff, 0 0 30px #33ccff, 0 0 40px #33ccff;
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>📊 Binary Trading Signal Bot</h2>
-    <p>Upload your chart screenshot:</p>
-    <input type="file" id="chartInput" accept="image/*" />
-    <br /><br />
-    <button onclick="analyzeMarket()">Analyze & Signal</button>
-    <div id="preview"></div>
-    <div id="result"></div>
-  </div>
 
-  <script>
-    function analyzeMarket() {
-      const fileInput = document.getElementById('chartInput');
-      const resultDiv = document.getElementById('result');
-      const previewDiv = document.getElementById('preview');
+<div class="container">
+  <div class="title">MT-BUG SOFTWARE</div>
 
-      if (fileInput.files.length === 0) {
-        alert('Please upload a screenshot!');
-        return;
-      }
+  <div><b>Status:</b> <span style="color:lime;">Active</span></div>
+  <div><b>Expiration:</b> Sun Jul 20 2025</div>
+  <br/>
 
-      // Show preview
-      const img = document.createElement('img');
-      img.src = URL.createObjectURL(fileInput.files[0]);
-      previewDiv.innerHTML = '';
-      previewDiv.appendChild(img);
+  <label>Select Asset</label>
+  <select id="asset">
+    <option value="EUR/USD">EUR/USD</option>
+    <option value="GBP/USD">GBP/USD</option>
+    <option value="USD/JPY">USD/JPY</option>
+    <option value="AUD/USD">AUD/USD</option>
+    <option value="USD/CHF">USD/CHF</option>
+    <option value="EUR/JPY">EUR/JPY</option>
+    <option value="EUR/USD OTC">EUR/USD OTC</option>
+    <option value="GBP/USD OTC">GBP/USD OTC</option>
+    <option value="USD/JPY OTC">USD/JPY OTC</option>
+    <option value="AUD/USD OTC">AUD/USD OTC</option>
+    <option value="USD/CHF OTC">USD/CHF OTC</option>
+    <option value="EUR/JPY OTC">EUR/JPY OTC</option>
+  </select>
 
-      resultDiv.innerHTML = '<p>Analyzing market data...</p>';
+  <label>Number of Signals</label>
+  <input type="number" id="signalCount" value="10" min="1" max="20"/>
 
-      setTimeout(() => {
-        // Random simulated analysis data
-        const trends = ['Uptrend (price above 50MA, higher highs)', 'Downtrend (price below 50MA, lower lows)', 'Sideways (price between MA, no clear direction)'];
-        const patterns = ['Bullish Engulfing', 'Bearish Engulfing', 'Doji', 'Hammer', 'Shooting Star', 'Morning Star', 'Evening Star'];
-        const rsiVals = ['RSI 30 (Oversold)', 'RSI 70 (Overbought)', 'RSI 50 (Neutral)'];
-        const macdVals = ['MACD Bullish Crossover', 'MACD Bearish Crossover', 'MACD Flat'];
-        const bollVals = ['Price near Upper Band (possible reversal)', 'Price near Lower Band (possible reversal)', 'Price near Middle Band'];
+  <label>Signal Type</label>
+  <select id="signalType">
+    <option value="all">All</option>
+    <option value="call">CALL Only</option>
+    <option value="put">PUT Only</option>
+  </select>
 
-        const trend = trends[Math.floor(Math.random() * trends.length)];
-        const pattern = patterns[Math.floor(Math.random() * patterns.length)];
-        const rsi = rsiVals[Math.floor(Math.random() * rsiVals.length)];
-        const macd = macdVals[Math.floor(Math.random() * macdVals.length)];
-        const boll = bollVals[Math.floor(Math.random() * bollVals.length)];
+  <label class="checkbox-label">
+    <input type="checkbox" id="premium" checked/>
+    SIGNAL FILTER (Premium Quality Signals Only)
+  </label>
 
-        // Signal decision
-        let signal = 'WAIT';
-        let reasons = [];
+  <button onclick="generateSignals()">Generate Signals</button>
 
-        if (trend.includes('Uptrend') && (pattern.includes('Bullish') || pattern === 'Hammer' || pattern === 'Morning Star') && macd.includes('Bullish')) {
-          signal = 'CALL';
-          reasons.push('Uptrend confirmed by moving averages');
-          reasons.push(`Pattern detected: ${pattern}`);
-          reasons.push('MACD shows bullish crossover');
-          if (rsi.includes('Oversold')) reasons.push('RSI shows oversold - buy pressure');
-        } 
-        else if (trend.includes('Downtrend') && (pattern.includes('Bearish') || pattern === 'Shooting Star' || pattern === 'Evening Star') && macd.includes('Bearish')) {
-          signal = 'PUT';
-          reasons.push('Downtrend confirmed by moving averages');
-          reasons.push(`Pattern detected: ${pattern}`);
-          reasons.push('MACD shows bearish crossover');
-          if (rsi.includes('Overbought')) reasons.push('RSI shows overbought - sell pressure');
-        } 
-        else {
-          reasons.push('Mixed or unclear signals, better to wait.');
-        }
+  <div id="loader">Generating premium signals...</div>
+  <div id="signals"></div>
 
-        resultDiv.innerHTML = `
-          <h3>✅ Market Analysis</h3>
-          <p><strong>Trend:</strong> ${trend}</p>
-          <p><strong>Candle Pattern:</strong> ${pattern}</p>
-          <p><strong>RSI:</strong> ${rsi}</p>
-          <p><strong>MACD:</strong> ${macd}</p>
-          <p><strong>Bollinger Band:</strong> ${boll}</p>
-          <h3>📌 Final Signal: <span style="color:${signal==='CALL' ? '#22c55e' : signal==='PUT' ? '#ef4444' : '#facc15'}">${signal}</span></h3>
-          <p><strong>Reasoning:</strong></p>
-          <ul>${reasons.map(r => `<li>${r}</li>`).join('')}</ul>
-        `;
-      }, 2500);
+  <button id="copy-btn" onclick="copySignals()">Copy All Signals</button>
+</div>
+
+<script>
+function generateSignals() {
+  const container = document.getElementById('signals');
+  const loader = document.getElementById('loader');
+  const premium = document.getElementById('premium').checked;
+  container.innerHTML = '';
+  loader.innerText = premium ? "Generating premium signals..." : "Generating signals...";
+  loader.style.display = 'block';
+
+  setTimeout(() => {
+    loader.style.display = 'none';
+
+    const count = parseInt(document.getElementById('signalCount').value);
+    const type = document.getElementById('signalType').value;
+    const asset = document.getElementById('asset').value;
+
+    const now = new Date();
+    now.setSeconds(0);
+    now.setMilliseconds(0);
+    const startTime = new Date(now.getTime() + 3 * 60 * 1000);
+
+    for (let i = 0; i < count; i++) {
+      const signalTime = new Date(startTime.getTime() + i * 3 * 60 * 1000);
+      const hours = signalTime.getHours().toString().padStart(2, '0');
+      const minutes = signalTime.getMinutes().toString().padStart(2, '0');
+      const timeStr = `${hours}:${minutes}`;
+
+      let signal = Math.random() > 0.5 ? 'CALL' : 'PUT';
+      if (type === 'call') signal = 'CALL';
+      else if (type === 'put') signal = 'PUT';
+      const signalClass = signal === 'CALL' ? 'call' : 'put';
+
+      // Simulated analysis (internal logic only, not displayed)
+      const sma = (Math.random() * (1.6 - 1.5) + 1.5).toFixed(4);
+      const rsi = (Math.random() * (70 - 30) + 30).toFixed(2);
+      const trend = sma > 1.55 ? "Uptrend" : "Downtrend";
+
+      container.innerHTML += `
+        <div class="signal-box">
+          <b>${timeStr}</b> - ${asset} - <span class="${signalClass}">${signal}</span>
+        </div>
+      `;
     }
-  </script>
+  }, 1000);
+}
+
+function copySignals() {
+  const signalBoxes = document.querySelectorAll('.signal-box');
+  if (signalBoxes.length === 0) {
+    alert("No signals to copy!");
+    return;
+  }
+
+  const text = Array.from(signalBoxes).map(box => box.textContent.trim()).join('\n');
+  navigator.clipboard.writeText(text).then(() => {
+    alert("All signals copied successfully!");
+  }).catch(() => {
+    alert("Failed to copy signals.");
+  });
+}
+</script>
+
 </body>
 </html>
