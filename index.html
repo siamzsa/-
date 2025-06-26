@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>MT-BUG FUTURE SIGNAL BOT</title>
+  <title>ALDI ACADEMY FUTURE SIGNAL BOT</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
@@ -15,7 +15,7 @@
       background-color: #1e1e2f;
       border-radius: 10px;
       padding: 20px;
-      box-shadow: 0 0 20px #00ff99;
+      box-shadow: 0 0 25px #00ff99;
       max-width: 420px;
       margin: auto;
     }
@@ -24,8 +24,49 @@
       font-size: 28px;
       color: #33ccff;
       margin-bottom: 20px;
+      font-weight: bold;
+      text-shadow: 0 0 10px #33ccff;
+      font-family: 'Segoe UI Rounded', 'Arial Rounded MT Bold', Arial, sans-serif; /* গোলাকৃতি ফন্ট স্টাইল */
     }
-    select, input {
+    .status-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-weight: 700;
+      font-family: 'Segoe UI Rounded', 'Arial Rounded MT Bold', Arial, sans-serif;
+      font-size: 16px;
+      color: lime;
+      text-shadow: 0 0 6px lime;
+    }
+    .pulsating-dot {
+      width: 14px;
+      height: 14px;
+      background-color: lime;
+      border-radius: 50%;
+      box-shadow: 0 0 8px lime;
+      animation: pulse 1.5s infinite;
+      flex-shrink: 0;
+    }
+    @keyframes pulse {
+      0% {
+        transform: scale(0.8);
+        opacity: 0.7;
+        box-shadow: 0 0 6px lime;
+      }
+      50% {
+        transform: scale(1.3);
+        opacity: 1;
+        box-shadow: 0 0 14px lime;
+      }
+      100% {
+        transform: scale(0.8);
+        opacity: 0.7;
+        box-shadow: 0 0 6px lime;
+      }
+    }
+
+    select, input[type="number"] {
       width: 100%;
       padding: 12px;
       margin-top: 10px;
@@ -35,40 +76,85 @@
       border: 2px solid #333;
       box-sizing: border-box;
       animation: glow 2s infinite alternate;
+      font-weight: 600;
+      font-size: 15px;
     }
     button {
       width: 100%;
       padding: 12px;
       margin-top: 20px;
       border: none;
-      border-radius: 5px;
+      border-radius: 6px;
       background: linear-gradient(to right, #ff00cc, #3333ff);
       color: white;
       font-size: 16px;
       cursor: pointer;
+      font-weight: 700;
+      box-shadow: 0 0 10px #ff00cc;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: linear-gradient(to right, #3333ff, #ff00cc);
+      box-shadow: 0 0 20px #3333ff;
     }
     .signal-box {
       background: #111122;
-      padding: 10px;
+      padding: 12px 14px;
       margin-top: 10px;
-      border-left: 5px solid #00ff99;
+      border-left: 6px solid #00ff99;
+      font-weight: 700;
+      font-size: 15px;
+      border-radius: 4px;
+      user-select: text;
+      text-shadow: 0 0 5px #00ff99;
     }
     .call {
       color: #00ff00;
+      text-shadow: 0 0 8px #00ff00;
     }
     .put {
       color: #ff4444;
+      text-shadow: 0 0 8px #ff4444;
     }
     #loader {
       display: none;
       text-align: center;
-      padding: 10px;
+      padding: 12px;
       color: cyan;
       font-weight: bold;
+      font-size: 16px;
+      text-shadow: 0 0 8px cyan;
     }
     #copy-btn {
       background-color: #00cc66;
       margin-top: 20px;
+      box-shadow: 0 0 12px #00cc66;
+      font-weight: 700;
+      font-size: 16px;
+      transition: background-color 0.3s ease;
+    }
+    #copy-btn:hover {
+      background-color: #00994d;
+      box-shadow: 0 0 18px #00994d;
+    }
+    label.checkbox-label {
+      display: flex;
+      align-items: center;
+      margin-top: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+      font-size: 14px;
+      color: #00ff99;
+      text-shadow: 0 0 6px #00ff99;
+    }
+    label.checkbox-label input[type="checkbox"] {
+      margin-right: 10px;
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: #00ff99;
+      box-shadow: 0 0 5px #00ff99;
     }
     @keyframes glow {
       from {
@@ -83,8 +169,12 @@
 <body>
 
 <div class="container">
-  <div class="title">MT-BUG SOFTWARE</div>
-  <div><b>Status:</b> <span style="color:lime;">Active</span></div>
+  <div class="title">ALDI ACADEMY</div>
+  
+  <div class="status-wrapper">
+    <div class="pulsating-dot"></div>
+    <div>Active</div>
+  </div>
   <div><b>Expiration:</b> Sun Jul 20 2025</div>
   <br/>
 
@@ -114,7 +204,7 @@
     <option value="put">PUT Only</option>
   </select>
 
-  <label>
+  <label class="checkbox-label">
     <input type="checkbox" id="premium" checked/>
     SIGNAL FILTER (Premium Quality Signals Only)
   </label>
@@ -150,33 +240,32 @@ function generateSignals() {
     let generatedSignals = 0;
     let iteration = 0;
 
-    while (generatedSignals < count && iteration < count * 10) {
+    while (generatedSignals < count && iteration < count * 20) {
       iteration++;
 
-      // Virtual market analysis
-      const sma = (Math.random() * (1.7 - 1.3) + 1.3).toFixed(4);
-      const rsi = Math.floor(Math.random() * (70 - 30 + 1)) + 30;
+      const sma = (Math.random() * (1.8 - 1.2) + 1.2).toFixed(4);
+      const rsi = Math.floor(Math.random() * (80 - 20 + 1)) + 20;
+      const macdDiff = (Math.random() * 2 - 1).toFixed(3); // -1 to 1
       const trend = sma > 1.5 ? 'Uptrend' : 'Downtrend';
 
-      // Decide signal based on analysis
       let signal = '';
-      if (trend === 'Uptrend' && rsi > 55) {
+      if (trend === 'Uptrend' && rsi > 60 && macdDiff > 0.15) {
         signal = 'CALL';
-      } else if (trend === 'Downtrend' && rsi < 45) {
+      } else if (trend === 'Downtrend' && rsi < 40 && macdDiff < -0.15) {
         signal = 'PUT';
       } else {
         signal = Math.random() > 0.5 ? 'CALL' : 'PUT';
       }
 
-      // Apply type filter
       if (type === 'call') signal = 'CALL';
       else if (type === 'put') signal = 'PUT';
 
-      // Apply premium filter
       if (premium) {
-        if ((signal === 'CALL' && !(trend === 'Uptrend' && rsi > 55)) ||
-            (signal === 'PUT' && !(trend === 'Downtrend' && rsi < 45))) {
-          continue; // Skip weak signals
+        if (
+          (signal === 'CALL' && !(trend === 'Uptrend' && rsi > 60 && macdDiff > 0.15)) ||
+          (signal === 'PUT' && !(trend === 'Downtrend' && rsi < 40 && macdDiff < -0.15))
+        ) {
+          continue;
         }
       }
 
@@ -187,34 +276,25 @@ function generateSignals() {
       const minutes = signalTime.getMinutes().toString().padStart(2, '0');
       const timeStr = `${hours}:${minutes}`;
 
-      container.innerHTML += `
-        <div class="signal-box">
-          <b>${timeStr}</b> - ${asset} - <span class="${signalClass}">${signal}</span>
-        </div>
-      `;
+      const div = document.createElement('div');
+      div.className = `signal-box ${signalClass}`;
+      div.textContent = `${timeStr} - ${signal} - ${asset}`;
+      container.appendChild(div);
 
       generatedSignals++;
     }
-
-    if (container.innerHTML === '') {
-      container.innerHTML = '<div>No premium signals matched the criteria.</div>';
-    }
-
   }, 1000);
 }
 
 function copySignals() {
-  const signalBoxes = document.querySelectorAll('.signal-box');
-  if (signalBoxes.length === 0) {
-    alert("No signals to copy!");
+  const container = document.getElementById('signals');
+  if (!container.textContent.trim()) {
+    alert("Please generate signals first!");
     return;
   }
-  const text = Array.from(signalBoxes).map(box => box.textContent.trim()).join('\n');
-  navigator.clipboard.writeText(text).then(() => {
-    alert("All signals copied successfully!");
-  }).catch(() => {
-    alert("Failed to copy signals.");
-  });
+  navigator.clipboard.writeText(container.textContent)
+    .then(() => alert("Signals copied to clipboard!"))
+    .catch(() => alert("Failed to copy signals."));
 }
 </script>
 
